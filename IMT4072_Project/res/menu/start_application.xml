@@ -48,7 +48,7 @@
             <item
                 android:id="@+id/action_imageOption1"
                 android:icon="@drawable/action_start"  
-                android:title="@string/action_imageOption1"/>
+                android:title="@string/action_imageOption1"/>
             -->
         </menu>
     </item>
