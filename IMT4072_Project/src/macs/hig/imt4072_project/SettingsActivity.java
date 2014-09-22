@@ -12,6 +12,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 /**
  * 
@@ -21,7 +22,9 @@ public class SettingsActivity extends Activity {
 	//get the saved values from sharedpreferences
 	SharedPreferences sharedPreferences;
 	private static Context context;
+	private static CheckBox chkNotificationOverwrite;
 	private static Spinner spinnerSetPixelSize;
+	private static TextView tvNotificationOverwrite;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +41,24 @@ public class SettingsActivity extends Activity {
 	 */
 	private void setValuesCheckboxes() {
 		CheckBox checkBox;
-		//set checked status for chkUseDefaultColourProfile
-		boolean checked = sharedPreferences.getBoolean(Filestorage.USE_DEFAULT_COLOUR_PROFILE_KEY, false);
+		boolean enabled = false;
+		//set checked checked for chkUseDefaultColourProfile
+		boolean checked = sharedPreferences.getBoolean(Filestorage.USE_DEFAULT_COLOUR_PROFILE_KEY, true);
 		checkBox = (CheckBox) findViewById(R.id.chkUseDefaultColourProfile);
 		checkBox.setChecked(checked);
-		//set checked status for chkOverwriteOriginalImage
-		checked = sharedPreferences.getBoolean(Filestorage.OVERWRITE_ORIGINAL_IMAGE_KEY, true);
+		//set checked checked for chkOverwriteOriginalImage
+		checked = sharedPreferences.getBoolean(Filestorage.OVERWRITE_ORIGINAL_IMAGE_KEY, false);
 		checkBox = (CheckBox) findViewById(R.id.chkOverwriteOriginalImage);
 		checkBox.setChecked(checked);
-		//set checked status for chkNotificationOverwrite
+		enabled = checkBox.isChecked();
+		//set checked checked for chkNotificationOverwrite
 		checked = sharedPreferences.getBoolean(Filestorage.NOTIFY_ABOUT_OWERWRITING_ORIGINAL_KEY, false);
-		checkBox = (CheckBox) findViewById(R.id.chkNotificationOverwrite);
-		checkBox.setChecked(checked);
-		//set checked status for chkEnableUndoFunction
+		chkNotificationOverwrite = (CheckBox) findViewById(R.id.chkNotificationOverwrite);
+		tvNotificationOverwrite = (TextView) findViewById(R.id.tvNotificationOverwrite);
+		tvNotificationOverwrite.setEnabled(enabled);
+		chkNotificationOverwrite.setEnabled(enabled);
+		chkNotificationOverwrite.setChecked(checked);
+		//set checked checked for chkEnableUndoFunction
 		checked = sharedPreferences.getBoolean(Filestorage.ENABLE_UNDO_FUNCTION_KEY, false);
 		checkBox = (CheckBox) findViewById(R.id.chkEnableUndoFunction);
 		checkBox.setChecked(checked);
@@ -94,26 +102,31 @@ public class SettingsActivity extends Activity {
 
 	public void useDefaultColourProfile(View v) {
 		CheckBox chkUseDefaultColourProfile = (CheckBox) v.findViewById(R.id.chkUseDefaultColourProfile);
-		boolean status = chkUseDefaultColourProfile.isChecked();
-		Filestorage.saveColurProfileUseOption(this, status);
+		boolean checked = chkUseDefaultColourProfile.isChecked();
+		Filestorage.saveColurProfileUseOption(this, checked);
 	} //useDefaultColourProfile
 
 	public void setOverwriteImage(View v) {
 		CheckBox chkOverwriteOriginalImage = (CheckBox) v.findViewById(R.id.chkOverwriteOriginalImage);
-		boolean status = chkOverwriteOriginalImage.isChecked();
-		Filestorage.saveOverwriteImageOption(this, status);
+		boolean checked = chkOverwriteOriginalImage.isChecked();
+		Filestorage.saveOverwriteImageOption(this, checked);
+		chkNotificationOverwrite.setEnabled(checked); 
+		tvNotificationOverwrite.setEnabled(checked);
+		if(!checked) {
+			chkNotificationOverwrite.setChecked(checked);
+		} //if
 	} //setOverwriteImage
 
 	public void setOverwriteImageNotification(View v) {
 		CheckBox chkNotificationOverwrite = (CheckBox) v.findViewById(R.id.chkNotificationOverwrite);
-		boolean status = chkNotificationOverwrite.isChecked();
-		Filestorage.saveNotifyOverwriteOption(this, status);
+		boolean checked = chkNotificationOverwrite.isChecked();
+		Filestorage.saveNotifyOverwriteOption(this, checked);
 	} //setOverwriteImageNotification
 
 	public void setEnableUndoFunction(View v) {
 		CheckBox chkEnableUndoFunction = (CheckBox) v.findViewById(R.id.chkEnableUndoFunction);
-		boolean status = chkEnableUndoFunction.isChecked();
-		Filestorage.saveEnabledUndoOption(this, status);
+		boolean checked = chkEnableUndoFunction.isChecked();
+		Filestorage.saveEnabledUndoOption(this, checked);
 	} //setEnableUndoFunction
 
 	@Override

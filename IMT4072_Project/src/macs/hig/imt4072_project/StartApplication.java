@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -30,35 +29,21 @@ public class StartApplication extends Activity  {
 	@SuppressWarnings("unused")
 	private String imagePath;
 	ArrayList<Integer> colourList;
+	//has an image been opened
 	private boolean isImageLoaded;
+	//has the image been saved
 	private boolean isImageSaved;
+	//is this the first time the program runs
 	private boolean firstRun;
-	private GridLayout gridLayout;
+	//GridLayout containing all the colours found in image
+	private GridLayout colourGridLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 		try {
-			//initialize variables
-			imagePath = "";
-			firstRun = true;
-			isImageSaved = true;
-			isImageLoaded = false;
+			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_start_application);
-			tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
-			colourList = new ArrayList<Integer>();
-			colourList.add(Color.BLACK);
-			colourList.add(Color.RED);
-			colourList.add(Color.GREEN);
-			colourList.add(Color.BLUE);
-			colourList.add(Color.WHITE);
-			 gridLayout = new GridLayout(this);
-			//*256*256
-			int XtremeNo = 240;
-			for(int i = 5; i < XtremeNo; i++) {
-				colourList.add(Color.BLUE);	
-			} //for
-			Toast.makeText(this, "size" + getScreenWidth(), Toast.LENGTH_LONG).show();
+			initializeVariables();
 		} catch (RuntimeException ex) {
 			//may occur if failing to create UI
 			ex.printStackTrace();
@@ -67,6 +52,33 @@ public class StartApplication extends Activity  {
 			ex.printStackTrace();
 		} //try/catch
 	} //onCreate
+
+	private void initializeVariables() {
+		imagePath = "";
+		firstRun = true;
+		isImageSaved = true;
+		isImageLoaded = false;
+		colourGridLayout = new GridLayout(this);
+		tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
+		//TODO: move this
+		fillArrayListWithColours();
+	} //initializeVariables
+
+	private void fillArrayListWithColours() {
+		//TODO: 
+		//change this into working code
+		colourList = new ArrayList<Integer>();
+		colourList.add(Color.BLACK);
+		colourList.add(Color.RED);
+		colourList.add(Color.GREEN);
+		colourList.add(Color.BLUE);
+		colourList.add(Color.WHITE);
+		//*256*256
+		int XtremeNo = 240;
+		for(int i = 5; i < XtremeNo; i++) {
+			colourList.add(Color.BLUE);	
+		} //for
+	} //fillArrayListWithColours
 
 	private final int getCellPixelSize() {
 		SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(this);
@@ -93,26 +105,16 @@ public class StartApplication extends Activity  {
 					widthNeeded = 0;
 			//textview functioning as a cell with pixel colour
 			TextView pixelColour;
-			RelativeLayout relLayoutStart;
 			screenWidth = getScreenWidth();
 			screenHeight = android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-			//create a gridlayout for displaying the colours in image 
-			//GridLayout gridLayout = new GridLayout(this);
 			LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
-			//get layout parent
-			relLayoutStart = (RelativeLayout)findViewById(R.id.relLayoutStart);
 			//since the gridlayout is added programatically, one need to remove 
 			//and re-draw it in case it has been updated from the settings screen
 			if (!firstRun) {
-				ViewGroup vg = (ViewGroup)(gridLayout.getParent());
-				vg.removeView(gridLayout);
-				gridLayout.removeAllViews();
-				 gridLayout = new GridLayout(this);
-				/*//gridLayout.removeAllViewsInLayout();
-				
-				int childCount = relLayoutStart.getChildCount();
-				relLayoutStart.removeViewAt(childCount-1);
-				*/
+				ViewGroup vg = (ViewGroup)(colourGridLayout.getParent());
+				vg.removeView(colourGridLayout);
+				colourGridLayout.removeAllViews();
+				colourGridLayout = new GridLayout(this);
 			} //if
 			//check how many pixels are needed to draw the grid
 			widthNeeded = GRID_CELL_PIXEL_SIZE * colourList.size();
@@ -134,7 +136,8 @@ public class StartApplication extends Activity  {
 						columnIndex = 0;
 						rowIndex++;
 					} //if
-					gridLayout.addView(pixelColour, new GridLayout.LayoutParams(GridLayout.spec(rowIndex), GridLayout.spec(columnIndex)));
+					colourGridLayout.addView(pixelColour, new GridLayout.LayoutParams(GridLayout.spec(rowIndex), 
+							GridLayout.spec(columnIndex)));
 					columnIndex++;
 				} //for
 			} else {
@@ -146,18 +149,15 @@ public class StartApplication extends Activity  {
 					pixelColour.setWidth(GRID_CELL_PIXEL_SIZE);
 					pixelColour.setHeight(GRID_CELL_PIXEL_SIZE);				
 					pixelColour.setBackgroundColor(colourList.get(index));
-					gridLayout.addView(pixelColour, new GridLayout.LayoutParams(rowSpec, GridLayout.spec(index)));
+					colourGridLayout.addView(pixelColour, new GridLayout.LayoutParams(rowSpec, GridLayout.spec(index)));
 				} //for
 			} //if
 			//add positioning rules for the gridlayout in parentview
 			layoutParams.addRule(RelativeLayout.BELOW, R.id.importedImage);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);//, R.id.relLayoutStart);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);//, R.id.relLayoutStart);
-		//	gridLayout.setLayoutParams(layoutParams);
-			
-			this.addContentView(gridLayout, layoutParams);
-			
-			//relLayoutStart.addView(gridLayout);
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			//add gridlayout to the view
+			this.addContentView(colourGridLayout, layoutParams);
 			//since at least one run has now been completed, 
 			//set that this is no longer the first run
 			firstRun = false;
@@ -259,8 +259,6 @@ public class StartApplication extends Activity  {
 	protected void onResume() {
 		super.onResume();
 		createGrid();
-		//TODO:
-		Log.v("Debug", "after CreateGrid() - onResume()");
 	} //onPostResume
 
 	@Override
