@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+        <!-- Default pixel size index: Size = 3 -->
+    <integer name="default_pixel_size_index">0</integer>
+</resources>

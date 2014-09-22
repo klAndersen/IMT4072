@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Names/Titles -->
+
+    <string name="app_name">IMT4072_Project</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Default values -->
+
+    <string name="default_image_text">No image to display! \nOpen image via File to start altering it.</string>
+    <string name="default_settings_text">You are now displaying settings!</string>
+    <string name="contentDescription">Image to edit.</string>
+    <string name="tvSetPixelSize">Select pixel size for colour grid:</string>
+    <string name="inputPixelSize">Numeric value&#8230;</string>
+    <string name="default_spinner">Default</string>
+
+    <!-- ActionBar buttons -->
+
+    <string name="action_file">File</string>
+    <string name="action_open_image">Open image</string>
+    <string name="action_save_image">Save image</string>
+    <string name="action_discard_image">Discard image</string>
+    <string name="action_alter_image">Alter image</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Settings screen: Textview -->
+
+    <string name="tvDefaultColourProfile">Use default colour profile?</string>
+    <string name="tvOverwriteOriginalImage">Overwrite original image when saving?</string>
+    <string name="tvNotificationOverwrite">Notify about original being overwritten?</string>
+    <string name="tvEnableUndoFunction">Enable Undo function (not implemented)</string>
+
+</resources>

@@ -1,0 +1,63 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" 
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="macs.hig.imt4072_project.StartApplication" >
+
+    <!-- File options: Open, save, discard image -->
+    <item
+        android:id="@+id/action_file"
+        android:icon="@drawable/action_file"
+        android:title="@string/action_file"
+        android:showAsAction="ifRoom">
+        <menu>
+
+            <!-- Open an image -->
+            <item
+                android:id="@+id/action_open_image"
+                android:icon="@drawable/action_new_picture"
+                android:title="@string/action_open_image"/>
+
+            <!-- Save the altered image -->
+            <item
+                android:id="@+id/action_save_image"
+                android:icon="@drawable/action_save"
+                android:title="@string/action_save_image"/>
+
+            <!-- Discard the image that were worked on -->
+            <item
+                android:id="@+id/action_discard_image"
+                android:icon="@drawable/action_discard"
+                android:title="@string/action_discard_image"/>
+        </menu>
+    </item>
+
+    <!-- Image alteration options -->
+    <item
+        android:id="@+id/action_alter_image"
+        android:icon="@drawable/action_picture"
+        android:title="@string/action_alter_image"
+        android:showAsAction="ifRoom">
+        <menu>
+
+            <!--
+            - change rgb values
+            - change hue, saturation, etc.
+            - change brightness/illumination, chroma
+            - other stuff
+            
+            Alter image: option1
+            <item
+                android:id="@+id/action_imageOption1"
+                android:icon="@drawable/action_start"  
+                android:title="@string/action_imageOption1"/>
+            -->
+        </menu>
+    </item>
+
+    <!-- Settings -->
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/action_settings"
+        android:title="@string/action_settings"
+        android:showAsAction="ifRoom"/>
+
+</menu>
