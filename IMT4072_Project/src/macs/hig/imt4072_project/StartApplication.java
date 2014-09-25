@@ -4,6 +4,9 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -68,27 +71,43 @@ public class StartApplication extends Activity  {
 		firstRun = true;
 		isImageSaved = true;
 		isImageLoaded = false;
+		colourList = new ArrayList<Integer>();
 		imgView = (ImageView) findViewById(R.id.importedImage);
 		colourGridLayout = new GridLayout(this);
 		tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
-		//TODO: move this
-		fillArrayListWithColours();
 	} //initializeVariables
 
-	private void fillArrayListWithColours() {
-		//TODO: 
-		//change this into working code
-		colourList = new ArrayList<Integer>();
-		colourList.add(Color.BLACK);
-		colourList.add(Color.RED);
-		colourList.add(Color.GREEN);
-		colourList.add(Color.BLUE);
-		colourList.add(Color.WHITE);
-		//*256*256
-		int XtremeNo = 240;
-		for(int i = 5; i < XtremeNo; i++) {
-			colourList.add(Color.BLUE);	
+	public static void fillArrayListWithColours(Bitmap bitmap, ImageView imgView) {
+		colourList.clear();
+		HashSet<Integer> hashColours = new HashSet<Integer>();
+		int colour = 0,
+				width = 0,
+				height = 0;
+		//since size may vary, select the smallest format size
+		width = (imgView.getWidth() > bitmap.getWidth()) ? bitmap.getWidth() : imgView.getWidth();
+		height = (imgView.getHeight() > bitmap.getHeight()) ? bitmap.getHeight() : imgView.getHeight();
+		for(int w = 0; w < width; w++) {
+			for(int h = 0; h < height; h++) {
+				colour = bitmap.getPixel(w, h);
+				hashColours.add(colour);
+			} //for
 		} //for
+
+		colourList.addAll(hashColours);
+
+		//Sorting
+		Collections.sort(colourList);/*, new Comparator<Integer>() {
+			@Override
+			public int compare(Integer colour1, Integer colour2) { 
+				return  colour1.compareTo(colour2);
+			}
+		});
+		ArrayList<String> test = new ArrayList<String>();
+		for(int i = 0; i < colourList.size(); i++) {
+			test.add(Integer.toHexString(colourList.get(i)));
+		}
+		
+		Collections.sort(test);*/
 	} //fillArrayListWithColours
 
 	private final int getCellPixelSize() {
@@ -206,6 +225,11 @@ public class StartApplication extends Activity  {
 		} //try/catch
 	} //openImage
 
+	public static void updateInterface(ArrayList<Integer> colours) {
+		colourList.clear();
+		colourList.addAll(colours);
+	}
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		try {
@@ -309,7 +333,10 @@ public class StartApplication extends Activity  {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		createGrid();
+		try {
+			createGrid();
+		}catch (Exception ex) {
+		} //try/catch
 	} //onPostResume
 
 	@Override

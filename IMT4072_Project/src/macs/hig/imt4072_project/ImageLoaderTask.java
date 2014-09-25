@@ -64,6 +64,7 @@ public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
 			final ImageLoaderTask imageTask = getImageLoaderTask(imageView);
 			if (this == imageTask && imageView != null) {
 				imageView.setImageBitmap(bitmap);
+				StartApplication.fillArrayListWithColours(bitmap, imageView);
 			} //if
 		} //if
 	} //onPostExecute
