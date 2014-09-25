@@ -8,13 +8,19 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
@@ -25,18 +31,22 @@ import android.widget.Toast;
  * @author Knut Lucas Andersen
  */
 public class StartApplication extends Activity  {
-	TextView tvDefaultText;
-	@SuppressWarnings("unused")
-	private String imagePath;
-	ArrayList<Integer> colourList;
+	private static final int REQUEST_IMAGE_CODE = 1001;
+	private static TextView tvDefaultText;
+	private static String imagePath;
+	private static ArrayList<Integer> colourList;
 	//has an image been opened
-	private boolean isImageLoaded;
+	private static boolean isImageLoaded;
 	//has the image been saved
-	private boolean isImageSaved;
+	private static boolean isImageSaved;
 	//is this the first time the program runs
-	private boolean firstRun;
+	private static boolean firstRun;
 	//GridLayout containing all the colours found in image
-	private GridLayout colourGridLayout;
+	private static GridLayout colourGridLayout;
+	private static ImageView imgView;
+	private static Bitmap bitmap;
+	@SuppressWarnings("unused")
+	private static String imageUri;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +68,7 @@ public class StartApplication extends Activity  {
 		firstRun = true;
 		isImageSaved = true;
 		isImageLoaded = false;
+		imgView = (ImageView) findViewById(R.id.importedImage);
 		colourGridLayout = new GridLayout(this);
 		tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
 		//TODO: move this
@@ -106,7 +117,7 @@ public class StartApplication extends Activity  {
 			//textview functioning as a cell with pixel colour
 			TextView pixelColour;
 			screenWidth = getScreenWidth();
-			screenHeight = android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+			screenHeight = LayoutParams.WRAP_CONTENT;
 			LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
 			//since the gridlayout is added programatically, one need to remove 
 			//and re-draw it in case it has been updated from the settings screen
@@ -126,7 +137,7 @@ public class StartApplication extends Activity  {
 				//loop through the colours in the arraylist
 				for(int index = 0; index < colourList.size(); index++) {
 					//create a textview that will contain current pixel colour
-					pixelColour = new TextView(this);
+					pixelColour = new TextView(colourGridLayout.getContext());
 					pixelColour.setWidth(GRID_CELL_PIXEL_SIZE);
 					pixelColour.setHeight(GRID_CELL_PIXEL_SIZE);				
 					pixelColour.setBackgroundColor(colourList.get(index));
@@ -145,17 +156,16 @@ public class StartApplication extends Activity  {
 				GridLayout.Spec rowSpec = GridLayout.spec(0);
 				for(int index = 0; index < colourList.size(); index++) {
 					//create a textview that will contain current pixel colour
-					pixelColour = new TextView(this);
+					pixelColour = new TextView(colourGridLayout.getContext());
 					pixelColour.setWidth(GRID_CELL_PIXEL_SIZE);
 					pixelColour.setHeight(GRID_CELL_PIXEL_SIZE);				
 					pixelColour.setBackgroundColor(colourList.get(index));
 					colourGridLayout.addView(pixelColour, new GridLayout.LayoutParams(rowSpec, GridLayout.spec(index)));
 				} //for
-			} //if
-			//add positioning rules for the gridlayout in parentview
-			layoutParams.addRule(RelativeLayout.BELOW, R.id.importedImage);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-			layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			} //if			
+			//add positioning rules for the gridlayout in parentview [doesn't work as intended]
+			layoutParams.addRule(RelativeLayout.BELOW, R.id.relLayoutStart);		
+			layoutParams.bottomMargin = RelativeLayout.ALIGN_PARENT_BOTTOM;
 			//add gridlayout to the view
 			this.addContentView(colourGridLayout, layoutParams);
 			//since at least one run has now been completed, 
@@ -181,13 +191,54 @@ public class StartApplication extends Activity  {
 				if (!isImageSaved) {
 					//ask if image should be saved
 				} //if
+				discardImage();
 			} //if
+			//create an intent to open the gallery browser
+			Intent intent = new Intent();
+			intent.setType("image/*");
+			intent.setAction(Intent.ACTION_GET_CONTENT);
+			String intentTitle = getString(R.string.get_image_intent_title);
+			startActivityForResult(Intent.createChooser(intent, intentTitle), REQUEST_IMAGE_CODE);
 			tvDefaultText.setVisibility(INVISIBLE);
 		} catch (Exception ex) {
 			String errorMsg = "Error:\n";
 			Toast.makeText(this, errorMsg + ex.toString(), Toast.LENGTH_LONG).show();
 		} //try/catch
 	} //openImage
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		try {
+			if (resultCode != RESULT_CANCELED && resultCode == RESULT_OK) {
+				if (requestCode == REQUEST_IMAGE_CODE) {
+					//get the uri path to the selected image
+					Uri selectedImageUri = data.getData();
+					String sortOrder = null,
+							selection = null;
+					String[] projection = { MediaStore.Images.Media.DATA };
+					String[] selectionArgs = null;
+					//create query to get the selected picture/image
+					Cursor cursor = getContentResolver().query(selectedImageUri, projection, selection, selectionArgs, sortOrder);
+					int imageDataIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+					cursor.moveToFirst();
+					//get the pictures path and uri
+					imagePath = cursor.getString(imageDataIndex);
+					imageUri = selectedImageUri.toString();
+					//close the cursor
+					cursor.close();
+					Toast.makeText(this, getString(R.string.selected_image_is_loading), Toast.LENGTH_LONG).show();
+					//start loading the selected image
+					ImageLoaderTask.loadSelectedImage(this.getResources(), imagePath, imgView, bitmap, getScreenWidth());
+				} //if
+			} //if
+		} catch(RuntimeException ex) {
+			ex.printStackTrace();
+			Toast.makeText(this, "Error: Could not load image!", Toast.LENGTH_LONG).show();
+		} catch(Exception ex) {
+			ex.printStackTrace();
+			Toast.makeText(this, "Error: Could not load image!", Toast.LENGTH_LONG).show();
+		} //try/catch
+	} //onActivityResult
 
 	/**
 	 * 

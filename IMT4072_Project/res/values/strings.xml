@@ -14,6 +14,9 @@
     <string name="tvSetPixelSize">Select pixel size for colour grid:</string>
     <string name="inputPixelSize">Numeric value&#8230;</string>
     <string name="default_spinner">Default</string>
+    <string name="get_image_intent_title">Select an image to alter</string>
+    <!-- Message telling the user that the selected image is loading -->
+    <string name="selected_image_is_loading">Loading image&#8230;</string>
 
     <!-- ActionBar buttons -->
 
