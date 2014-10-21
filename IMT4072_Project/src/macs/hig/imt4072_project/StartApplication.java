@@ -2,23 +2,20 @@ package macs.hig.imt4072_project;
 
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
-
+//java imports
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
-
+//android imports
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -28,9 +25,11 @@ import android.widget.RelativeLayout;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
+//own library package import
+import macs.hig.imt4072_library.*;
 
 /**
- * 
+ * Starting point for the application
  * @author Knut Lucas Andersen
  */
 public class StartApplication extends Activity  {
@@ -348,4 +347,11 @@ public class StartApplication extends Activity  {
 	protected void onDestroy() {
 		super.onDestroy();
 	} //onDestroy
+	
+
+    /** Calls into C/C++ code */
+    public void nativeCall()
+    {
+        // TODO
+    }
 } //StartApplication
