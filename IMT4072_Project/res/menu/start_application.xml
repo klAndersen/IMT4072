@@ -21,12 +21,6 @@
                 android:id="@+id/action_save_image"
                 android:icon="@drawable/action_save"
                 android:title="@string/action_save_image"/>
-
-            <!-- Discard the image that were worked on -->
-            <item
-                android:id="@+id/action_discard_image"
-                android:icon="@drawable/action_discard"
-                android:title="@string/action_discard_image"/>
         </menu>
     </item>
 
@@ -48,7 +42,7 @@
             <item
                 android:id="@+id/action_imageOption1"
                 android:icon="@drawable/action_start"  
-                android:title="@string/action_imageOption1"/>
+                android:title="@string/action_imageOption1"/>
             -->
         </menu>
     </item>

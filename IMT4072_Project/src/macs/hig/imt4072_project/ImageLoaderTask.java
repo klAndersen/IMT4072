@@ -120,8 +120,11 @@ public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
 	/**
 	 * Checks if task is to be cancelled, and if its cancelled/not active, 
 	 * it starts a new task loading selected image
+	 * @param res - Resources:
 	 * @param imagePath - String: The path to the selected image
 	 * @param imageView - ImageView: The resource imageview
+	 * @param placeholderImage - Bitmap: 
+	 * @param requiredWidth - int:
 	 */
 	public static void loadSelectedImage(Resources res, String imagePath, ImageView imageView, 
 			Bitmap placeholderImage, int requiredWidth) {

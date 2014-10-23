@@ -34,4 +34,11 @@
     <string name="tvNotificationOverwrite">Notify about original being overwritten?</string>
     <string name="tvEnableUndoFunction">Enable Undo function (not implemented)</string>
 
+    <!-- AlertDialog Messagebox -->
+
+    <string name="messagebox_saveImage_title">Save changes?</string>
+    <string name="messagebox_saveImage_message">Changes to image has not been saved.\nDo you want to save changes?</string>
+    <string name="messagebox_saveImage_posButton">Save changes</string>
+    <string name="messagebox_saveImage_negButton">Don\'t save</string>
+
 </resources>
