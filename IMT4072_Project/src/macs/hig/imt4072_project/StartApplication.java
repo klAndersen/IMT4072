@@ -101,6 +101,7 @@ public class StartApplication extends Activity  {
 		imagePath = "";
 		context = this;
 		firstRun = true;
+		isCopySaved = false;
 		isImageSaved = true;
 		isImageLoaded = false;
 		colourList = new ArrayList<Integer>();
@@ -109,6 +110,16 @@ public class StartApplication extends Activity  {
 		tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
 	} //initializeVariables
 
+	/**
+	 * Fills an arraylist with the colours that exists in the passed bitmap.
+	 * The imageview is used to get the width and height of image, to be able 
+	 * to loop through all the pixels in the image. A HashSet is used first, since 
+	 * this ignores duplicates. Colours are then sorted and the gridlayout is then 
+	 * created.
+	 * @param bitmap - Bitmap: Bitmap of image
+	 * @param imgView - ImageView: Imageview containing the image
+	 * @see {@link StartApplication#createGrid()}
+	 */
 	public static void fillArrayListWithColours(Bitmap bitmap, ImageView imgView) {
 		colourList.clear();
 		//using hashset since this ignores duplicates
@@ -116,16 +127,13 @@ public class StartApplication extends Activity  {
 		int colour = 0,
 				width = 0,
 				height = 0;
-		int counter = 0;
 		//since size may vary, select the smallest format size
 		width = (imgView.getWidth() > bitmap.getWidth()) ? bitmap.getWidth() : imgView.getWidth();
 		height = (imgView.getHeight() > bitmap.getHeight()) ? bitmap.getHeight() : imgView.getHeight();
 		for(int w = 0; w < width; w++) {
 			for(int h = 0; h < height; h++) {
 				colour = bitmap.getPixel(w, h);
-				//	hashColours.add(colour);
-				if (hashColours.add(colour)) 
-					counter++;
+				hashColours.add(colour);
 			} //for
 		} //for
 		colourList.addAll(hashColours);
@@ -134,6 +142,10 @@ public class StartApplication extends Activity  {
 		createGrid();
 	} //fillArrayListWithColours
 
+	/**
+	 * Returns an array containing the pixel cell sizes used in the gridlayout
+	 * @return int[]: Array containing the different cell sizes for the gridlayout
+	 */
 	private final static int getCellPixelSize() {
 		SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(context);
 		int index = 0,
@@ -144,13 +156,21 @@ public class StartApplication extends Activity  {
 		return pixelSizeArray[index];
 	} //getCellPixelSize
 
+	/**
+	 * Get the screen width of this device.
+	 * @return {@link DisplayMetrics#widthPixels}
+	 */
 	private static int getScreenWidth() {
 		DisplayMetrics displaymetrics = context.getResources().getDisplayMetrics();
 		return displaymetrics.widthPixels;
 	} //getScreenWidth
 
 	/**
-	 * 
+	 * Creates a colour grid containing all the colours found in the image.
+	 * It contains two different loops, depending on whether or not all 
+	 * the colour cells can fit within the given width of the screen. If more 
+	 * lines are needed, the second loop creates multiple rows within the 
+	 * GridLayout.
 	 */
 	private static void createGrid() {
 		try {
@@ -226,7 +246,7 @@ public class StartApplication extends Activity  {
 	} //createGrid
 
 	/**
-	 * 
+	 * Removes the colour grid if it has been added to the screen.
 	 */
 	private static void removeGrid() {
 		//has the view been created?
@@ -239,7 +259,10 @@ public class StartApplication extends Activity  {
 	} //removeGrid
 
 	/**
-	 * 
+	 * Opens an image for editing. If an image is already 
+	 * opened, a check is done to see if the image is unsaved, 
+	 * if the image is unsaved, discardImage() is called.
+	 * @see StartApplication#discardImage()
 	 */
 	public void openImage() {
 		try {
@@ -266,11 +289,6 @@ public class StartApplication extends Activity  {
 			Toast.makeText(this, errorMsg + ex.toString(), Toast.LENGTH_LONG).show();
 		} //try/catch
 	} //openImage
-
-	public static void updateInterface(ArrayList<Integer> colours) {
-		colourList.clear();
-		colourList.addAll(colours);
-	} //updateInterface
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -307,7 +325,12 @@ public class StartApplication extends Activity  {
 	} //onActivityResult
 
 	/**
-	 * 
+	 * Checks if an image has been opened and loaded, and then continues 
+	 * with a check to see if the original image is to be overwritten or if 
+	 * a copy should be made. If this is the first save and it should be saved 
+	 * as copy, an extension is made to the filename. Then the content of the 
+	 * imageview is copied into the bitmap, which is then compressed and flushed 
+	 * to file by use of FileOutputStream.
 	 */
 	public void saveImage() {
 		//was an image opened?
@@ -344,7 +367,9 @@ public class StartApplication extends Activity  {
 	} //saveImage
 
 	/**
-	 * 
+	 * Shows a messagebox (AlertDialog) asking the user if changes to image 
+	 * is to be saved. If changes are not to be saved, the isImageSaved so 
+	 * that the user can then continue to open another image for editing.
 	 */
 	public void discardImage() {
 		try { 
@@ -380,6 +405,12 @@ public class StartApplication extends Activity  {
 		} //try/catch
 	} //discardImage
 
+	/**
+	 * Clears the screen by removing the gridlayout, 
+	 * emptying the content in imageview, sets bitmap 
+	 * to null and sets the visibility of tvDefaultText 
+	 * to true
+	 */
 	private void clearStartScreen() {
 		//remove grid, clear imageview and show default text
 		if (isImageLoaded) 
