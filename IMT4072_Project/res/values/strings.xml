@@ -15,15 +15,18 @@
     <string name="inputPixelSize">Numeric value&#8230;</string>
     <string name="default_spinner">Default</string>
     <string name="get_image_intent_title">Select an image to alter</string>
+    
     <!-- Message telling the user that the selected image is loading -->
     <string name="selected_image_is_loading">Loading image&#8230;</string>
-
+    
+    <!-- Message telling the user that the image was saved successfully -->
+    <string name="image_changes_saved">Changes was saved successfully!</string>
+    
     <!-- ActionBar buttons -->
 
     <string name="action_file">File</string>
     <string name="action_open_image">Open image</string>
     <string name="action_save_image">Save image</string>
-    <string name="action_discard_image">Discard image</string>
     <string name="action_alter_image">Alter image</string>
     <string name="action_settings">Settings</string>
 
@@ -40,5 +43,10 @@
     <string name="messagebox_saveImage_message">Changes to image has not been saved.\nDo you want to save changes?</string>
     <string name="messagebox_saveImage_posButton">Save changes</string>
     <string name="messagebox_saveImage_negButton">Don\'t save</string>
+    
+    <!-- Error messages -->
+    
+    <string name="exception_failed_loading_image">Error: Could not load image!</string>
+    <string name="exception_out_of_memory">Sorry! Out of memory, application needs to be closed.</string>
 
 </resources>

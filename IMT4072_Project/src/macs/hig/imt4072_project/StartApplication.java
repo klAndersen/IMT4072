@@ -3,26 +3,11 @@ package macs.hig.imt4072_project;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
-
-
-
-
-
-
-
-import java.io.FileOutputStream;
 //java imports
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-
-
-
-
-
-
-
-
 //android imports
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,7 +17,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -40,7 +24,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -60,28 +43,30 @@ public class StartApplication extends Activity  {
 	/** default display text when no image is loaded **/
 	private static TextView tvDefaultText;
 	/** path to image **/
-	private static String imagePath;
+	private static String _imagePath;
 	/** list containing the colours in the loaded image **/
-	private static ArrayList<Integer> colourList;
+	private static ArrayList<Integer> _colourList;
 	/** has an image been opened? **/
-	private static boolean isImageLoaded;
+	private static boolean _isImageLoaded;
 	/** has the image been saved **/
-	private static boolean isImageSaved;
+	private static boolean _isImageSaved;
 	/** has a copy of this image been saved **/
-	private static boolean isCopySaved;
+	private static boolean _isCopySaved;
 	/** is this the first time the program runs **/
-	private static boolean firstRun;
+	private static boolean _firstRun;
 	/** GridLayout containing all the colours found in image **/
 	private static GridLayout colourGridLayout;
 	/** Imageview displaying image **/
 	private static ImageView imgView;
 	/** Bitmap object containing the loaded image **/
-	private static Bitmap bitmap;
+	private static Bitmap _bitmap;
 	@SuppressWarnings("unused")
-	private static String imageUri;
+	private static String _imageUri;
 	/** Context object for this activity **/
-	private static Context context;
-
+	private static Context _context;
+	/** Color space operations **/
+	private static ColorSpaceOperations _csOperations; 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		try {
@@ -98,15 +83,16 @@ public class StartApplication extends Activity  {
 	} //onCreate
 
 	private void initializeVariables() {
-		imagePath = "";
-		context = this;
-		firstRun = true;
-		isCopySaved = false;
-		isImageSaved = true;
-		isImageLoaded = false;
-		colourList = new ArrayList<Integer>();
-		imgView = (ImageView) findViewById(R.id.importedImage);
+		_imagePath = "";
+		_context = this;
+		_firstRun = true;
+		_isCopySaved = false;
+		_isImageSaved = true;
+		_isImageLoaded = false;
+		_bitmap = null;
+		_colourList = new ArrayList<Integer>();
 		colourGridLayout = new GridLayout(this);
+		imgView = (ImageView) findViewById(R.id.importedImage);
 		tvDefaultText = (TextView) findViewById(R.id.tvDefaultText);
 	} //initializeVariables
 
@@ -121,37 +107,43 @@ public class StartApplication extends Activity  {
 	 * @see {@link StartApplication#createGrid()}
 	 */
 	public static void fillArrayListWithColours(Bitmap bitmap, ImageView imgView) {
-		colourList.clear();
+		_bitmap = bitmap;
+		_colourList.clear();
 		//using hashset since this ignores duplicates
 		HashSet<Integer> hashColours = new HashSet<Integer>();
 		int colour = 0,
 				width = 0,
 				height = 0;
 		//since size may vary, select the smallest format size
-		width = (imgView.getWidth() > bitmap.getWidth()) ? bitmap.getWidth() : imgView.getWidth();
-		height = (imgView.getHeight() > bitmap.getHeight()) ? bitmap.getHeight() : imgView.getHeight();
+		width = (imgView.getWidth() > _bitmap.getWidth()) ? _bitmap.getWidth() : imgView.getWidth();
+		height = (imgView.getHeight() > _bitmap.getHeight()) ? _bitmap.getHeight() : imgView.getHeight();
 		for(int w = 0; w < width; w++) {
 			for(int h = 0; h < height; h++) {
-				colour = bitmap.getPixel(w, h);
+				colour = _bitmap.getPixel(w, h);
 				hashColours.add(colour);
 			} //for
 		} //for
-		colourList.addAll(hashColours);
+		_colourList.addAll(hashColours);
 		//Sorting
-		Collections.sort(colourList);
+		Collections.sort(_colourList);
+		createColorProfileFromImage();
 		createGrid();
 	} //fillArrayListWithColours
+	
+	private static void createColorProfileFromImage() {
+		
+	} //createColorProfileFromImage
 
 	/**
 	 * Returns an array containing the pixel cell sizes used in the gridlayout
 	 * @return int[]: Array containing the different cell sizes for the gridlayout
 	 */
 	private final static int getCellPixelSize() {
-		SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(context);
+		SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(_context);
 		int index = 0,
 				defaultIndex = 0;
-		int[] pixelSizeArray = context.getResources().getIntArray(R.array.pixel_cell_size_array);
-		defaultIndex = context.getResources().getInteger(R.integer.default_pixel_size_index);
+		int[] pixelSizeArray = _context.getResources().getIntArray(R.array.pixel_cell_size_array);
+		defaultIndex = _context.getResources().getInteger(R.integer.default_pixel_size_index);
 		index = sharedPreferences.getInt(Filestorage.SET_PIXEL_CELL_SIZE_INDEX, defaultIndex);
 		return pixelSizeArray[index];
 	} //getCellPixelSize
@@ -161,7 +153,7 @@ public class StartApplication extends Activity  {
 	 * @return {@link DisplayMetrics#widthPixels}
 	 */
 	private static int getScreenWidth() {
-		DisplayMetrics displaymetrics = context.getResources().getDisplayMetrics();
+		DisplayMetrics displaymetrics = _context.getResources().getDisplayMetrics();
 		return displaymetrics.widthPixels;
 	} //getScreenWidth
 
@@ -186,23 +178,23 @@ public class StartApplication extends Activity  {
 			LayoutParams layoutParams = new LayoutParams(screenWidth, screenHeight);
 			//since the gridlayout is added programatically, one need to remove 
 			//and re-draw it in case it has been updated from the settings screen
-			if (!firstRun) {
+			if (!_firstRun) {
 				removeGrid();
 			} //if
 			//check how many pixels are needed to draw the grid
-			widthNeeded = GRID_CELL_PIXEL_SIZE * colourList.size();
+			widthNeeded = GRID_CELL_PIXEL_SIZE * _colourList.size();
 			//does the width thats needed exceed the display space?	
 			if (widthNeeded > screenWidth) {				
 				int rowIndex = 0,
 						columnIndex = 0,
 						usedWidthSpace = 0;
 				//loop through the colours in the arraylist
-				for(int index = 0; index < colourList.size(); index++) {
+				for(int index = 0; index < _colourList.size(); index++) {
 					//create a textview that will contain current pixel colour
 					pixelColour = new TextView(colourGridLayout.getContext());
 					pixelColour.setWidth(GRID_CELL_PIXEL_SIZE);
 					pixelColour.setHeight(GRID_CELL_PIXEL_SIZE);				
-					pixelColour.setBackgroundColor(colourList.get(index));
+					pixelColour.setBackgroundColor(_colourList.get(index));
 					//calculate the widthspace used and check if it has exceeded screen width
 					usedWidthSpace = (columnIndex*GRID_CELL_PIXEL_SIZE) + GRID_CELL_PIXEL_SIZE;
 					if (usedWidthSpace > screenWidth) {
@@ -216,12 +208,12 @@ public class StartApplication extends Activity  {
 			} else {
 				//needed width does not exceed display width, so just draw grid
 				GridLayout.Spec rowSpec = GridLayout.spec(0);
-				for(int index = 0; index < colourList.size(); index++) {
+				for(int index = 0; index < _colourList.size(); index++) {
 					//create a textview that will contain current pixel colour
 					pixelColour = new TextView(colourGridLayout.getContext());
 					pixelColour.setWidth(GRID_CELL_PIXEL_SIZE);
 					pixelColour.setHeight(GRID_CELL_PIXEL_SIZE);				
-					pixelColour.setBackgroundColor(colourList.get(index));
+					pixelColour.setBackgroundColor(_colourList.get(index));
 					colourGridLayout.addView(pixelColour, new GridLayout.LayoutParams(rowSpec, GridLayout.spec(index)));
 				} //for
 			} //if			
@@ -229,13 +221,13 @@ public class StartApplication extends Activity  {
 			layoutParams.addRule(RelativeLayout.BELOW, R.id.relLayoutStart);		
 			layoutParams.bottomMargin = RelativeLayout.ALIGN_PARENT_BOTTOM;
 			//add gridlayout to the view
-			((Activity) context).addContentView(colourGridLayout, layoutParams);
+			((Activity) _context).addContentView(colourGridLayout, layoutParams);
 			//since at least one run has now been completed, 
 			//set that this is no longer the first run
-			firstRun = false;
+			_firstRun = false;
 		} catch (OutOfMemoryError ex) {
 			ex.printStackTrace();
-			Toast.makeText(context, "Sorry! Out of memory, application needs to be closed.", Toast.LENGTH_LONG).show();
+			Toast.makeText(_context, _context.getString(R.string.exception_out_of_memory), Toast.LENGTH_LONG).show();
 		} catch (StackOverflowError ex) {
 			ex.printStackTrace();
 		} catch (IllegalArgumentException ex) {
@@ -254,7 +246,7 @@ public class StartApplication extends Activity  {
 			ViewGroup vg = (ViewGroup)(colourGridLayout.getParent());
 			vg.removeView(colourGridLayout);
 			colourGridLayout.removeAllViews();
-			colourGridLayout = new GridLayout(context);
+			colourGridLayout = new GridLayout(_context);
 		} //if
 	} //removeGrid
 
@@ -267,7 +259,7 @@ public class StartApplication extends Activity  {
 	public void openImage() {
 		try {
 			//check if image is opened and unsaved?
-			if (isImageLoaded && !isImageSaved) {
+			if (_isImageLoaded && !_isImageSaved) {
 				//discard open image
 				discardImage();
 			} else {
@@ -278,9 +270,9 @@ public class StartApplication extends Activity  {
 				intent.setAction(Intent.ACTION_GET_CONTENT);
 				String intentTitle = getString(R.string.get_image_intent_title);
 				startActivityForResult(Intent.createChooser(intent, intentTitle), REQUEST_IMAGE_CODE);
-				isCopySaved = false;
-				isImageSaved = true;
-				isImageLoaded = true;
+				_isCopySaved = false;
+				_isImageSaved = true;
+				_isImageLoaded = true;
 				tvDefaultText.setVisibility(INVISIBLE);
 			} //if
 		} catch (Exception ex) {
@@ -306,21 +298,21 @@ public class StartApplication extends Activity  {
 					int imageDataIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 					cursor.moveToFirst();
 					//get the pictures path and uri
-					imagePath = cursor.getString(imageDataIndex);
-					imageUri = selectedImageUri.toString();
+					_imagePath = cursor.getString(imageDataIndex);
+					_imageUri = selectedImageUri.toString();
 					//close the cursor
 					cursor.close();
 					Toast.makeText(this, getString(R.string.selected_image_is_loading), Toast.LENGTH_LONG).show();
 					//start loading the selected image
-					ImageLoaderTask.loadSelectedImage(this.getResources(), imagePath, imgView, bitmap, getScreenWidth());
+					ImageLoaderTask.loadSelectedImage(this.getResources(), _imagePath, imgView, _bitmap, getScreenWidth());
 				} //if
 			} //if
 		} catch(RuntimeException ex) {
 			ex.printStackTrace();
-			Toast.makeText(this, "Error: Could not load image!", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.exception_failed_loading_image), Toast.LENGTH_LONG).show();
 		} catch(Exception ex) {
 			ex.printStackTrace();
-			Toast.makeText(this, "Error: Could not load image!", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.exception_failed_loading_image), Toast.LENGTH_LONG).show();
 		} //try/catch
 	} //onActivityResult
 
@@ -334,30 +326,27 @@ public class StartApplication extends Activity  {
 	 */
 	public void saveImage() {
 		//was an image opened?
-		if (isImageLoaded) {
+		if (_isImageLoaded) {
 			try {
 				//create a stream to write image to file
 				String key = Filestorage.OVERWRITE_ORIGINAL_IMAGE_KEY;
-				SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(context);
+				SharedPreferences sharedPreferences = Filestorage.getSharedPreferances(_context);
 				boolean overWriteOriginal = sharedPreferences.getBoolean(key, false);
 				//is the original to be kept and has the copy been saved as a new version?
-				if (!overWriteOriginal && !isCopySaved) {
+				if (!overWriteOriginal && !_isCopySaved) {
 					char period = '.';
-					isCopySaved = true;
+					_isCopySaved = true;
 					String additionalName = "_1";
-					int periodIndex = imagePath.lastIndexOf(period);					
-					imagePath = imagePath.substring(0, periodIndex) + additionalName + imagePath.substring(periodIndex);					
+					int periodIndex = _imagePath.lastIndexOf(period);					
+					_imagePath = _imagePath.substring(0, periodIndex) + additionalName + _imagePath.substring(periodIndex);					
 				} //if 
-				FileOutputStream writeToFile = new FileOutputStream(imagePath);
-				//get the image from the bitmap and compress it
-				bitmap = ((BitmapDrawable)imgView.getDrawable()).getBitmap();
-				bitmap.compress(Bitmap.CompressFormat.JPEG, 100, writeToFile);
-				//flush stream to assure data gets written, close stream writer 
-				//and set that the image was saved
+				FileOutputStream writeToFile = new FileOutputStream(_imagePath);
+				_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, writeToFile);
+				//flush stream to assure data gets written and close the stream writer 
 				writeToFile.flush();
 				writeToFile.close();
-				isImageSaved = true;
-				Toast.makeText(context, "Image saved", Toast.LENGTH_LONG).show();
+				_isImageSaved = true;
+				Toast.makeText(_context, _context.getString(R.string.image_changes_saved), Toast.LENGTH_LONG).show();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				String errorMsg = "Error:\n";
@@ -394,7 +383,7 @@ public class StartApplication extends Activity  {
 				@Override
 				public void onClick(DialogInterface dialog, int whichButton) {
 					//the user doesn't want to save changes
-					isImageSaved = true;			
+					_isImageSaved = true;			
 				} //onClick
 			});
 			//show the inputbox
@@ -413,14 +402,14 @@ public class StartApplication extends Activity  {
 	 */
 	private void clearStartScreen() {
 		//remove grid, clear imageview and show default text
-		if (isImageLoaded) 
+		if (_isImageLoaded) 
 			removeGrid();
-		isImageLoaded = false;
+		_isImageLoaded = false;
 		if (imgView.getDrawable() != null) {
 			imgView.setImageResource(0);
-		 	bitmap = null;
+		 	_bitmap = null;
 		} //if
-		colourList.clear();
+		_colourList.clear();
 		tvDefaultText.setVisibility(VISIBLE);
 	} //clearStartScreen
 

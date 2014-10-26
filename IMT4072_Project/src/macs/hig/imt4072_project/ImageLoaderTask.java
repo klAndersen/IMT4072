@@ -16,10 +16,10 @@ import android.widget.ImageView;
  * <a href="http://developer.android.com/training/displaying-bitmaps/index.html">AndroidDeveloper</a>.
  * @author Knut Lucas Andersen
  */
-public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {
-	private String imagePath = "";
+public class ImageLoaderTask extends AsyncTask<String, Void, Bitmap> {	
 	private static final int REQUIRED_HEIGHT = 350;
-	private static int _requiredWidth = 0;
+	private String imagePath = "";
+	private static int _requiredWidth = 0;	
 	private final WeakReference<ImageView> imageViewReference;
 
 	/**
